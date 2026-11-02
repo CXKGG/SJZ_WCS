@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Data/Data.csproj" />
+  <Project Path="Interface/Interface.csproj" />
+  <Project Path="Model/Model.csproj" />
+  <Project Path="Service/Service.csproj" />
+  <Project Path="SJZ_WCS/SJZ_WCS.csproj" />
+</Solution>

@@ -1,0 +1,183 @@
+@SJZ_WCS_HostAddress = http://localhost:5216
+
+# OpenAPI 文档
+GET {{SJZ_WCS_HostAddress}}/openapi/v1.json
+Accept: application/json
+
+###
+
+# Scalar 调试界面（浏览器打开）
+GET {{SJZ_WCS_HostAddress}}/scalar/v1
+Accept: text/html
+
+###
+
+# 全部 PLC 状态
+GET {{SJZ_WCS_HostAddress}}/api/plc
+Accept: application/json
+
+###
+
+# 单台 PLC 状态
+GET {{SJZ_WCS_HostAddress}}/api/plc/RGV01/status
+Accept: application/json
+
+###
+
+# 主动连接
+POST {{SJZ_WCS_HostAddress}}/api/plc/RGV01/connect
+Accept: application/json
+
+###
+
+# 读 DB20 前 26 字节（十六进制返回）
+GET {{SJZ_WCS_HostAddress}}/api/plc/RGV01/db/20?start=0&length=26
+Accept: application/json
+
+###
+
+# 向 DB23 写入 4 个字节
+POST {{SJZ_WCS_HostAddress}}/api/plc/RGV01/db/23
+Content-Type: application/json
+
+{
+  "startByte": 0,
+  "hex": "00 00 00 00"
+}
+
+###
+
+# 拆垛 PLC1 主动连接
+POST {{SJZ_WCS_HostAddress}}/api/plc/PLC1/connect
+Accept: application/json
+
+###
+
+# 读拆垛 PLC1 的 DB600（PLC → WCS）前 32 字节（原始 hex）
+GET {{SJZ_WCS_HostAddress}}/api/plc/PLC1/db/600?start=0&length=32
+Accept: application/json
+
+###
+
+# 向拆垛 PLC1 的 DB500（WCS → PLC）写入 4 个字节（原始 hex）
+POST {{SJZ_WCS_HostAddress}}/api/plc/PLC1/db/500
+Content-Type: application/json
+
+{
+  "startByte": 0,
+  "hex": "00 00 00 00"
+}
+
+###
+
+# 拆垛段 DB500/DB600 字段布局（偏移/类型/长度/位号）
+GET {{SJZ_WCS_HostAddress}}/api/protocol/destacker/layout
+Accept: application/json
+
+###
+
+# 离线解码 DB600 报文（PLC → WCS）
+POST {{SJZ_WCS_HostAddress}}/api/protocol/destacker/db600/decode
+Content-Type: application/json
+
+{
+  "hex": "00 00 00 00 00 00 00 00"
+}
+
+###
+
+# 离线编码 DB500 报文（WCS → PLC）
+POST {{SJZ_WCS_HostAddress}}/api/protocol/destacker/db500/encode
+Content-Type: application/json
+
+{
+  "station0": {
+    "leftProductType": 1,
+    "leftPalletCount": 2,
+    "leftPalletNo": "P0001"
+  }
+}
+
+###
+
+# 读取拆垛 PLC1 的 DB600 并按模型解析
+GET {{SJZ_WCS_HostAddress}}/api/plc/PLC1/destacker/db
+Accept: application/json
+
+###
+
+# 按 DB500 模型写入拆垛 PLC1（未赋值字段写 0/空串）
+POST {{SJZ_WCS_HostAddress}}/api/plc/PLC1/destacker/db
+Content-Type: application/json
+
+{
+  "station0": {
+    "leftProductType": 1,
+    "leftPalletCount": 2,
+    "leftPalletNo": "P0001"
+  }
+}
+
+###
+
+# 分页查询日志（可按分类/等级/模块/关键字/时间过滤）
+GET {{SJZ_WCS_HostAddress}}/api/logs?category=1&page=1&size=20
+Accept: application/json
+
+###
+
+# PLC 实时快照：全部设备（后台每 500ms 采集，DB600=PLC→WCS 状态块、DB500=WCS→PLC 指令块读回）
+GET {{SJZ_WCS_HostAddress}}/api/plc/snapshot
+Accept: application/json
+
+###
+
+# PLC 实时快照：单台
+GET {{SJZ_WCS_HostAddress}}/api/plc/PLC1/snapshot
+Accept: application/json
+
+###
+
+# 扫码上报（上位机/扫码端主动调用，5 个字段）
+# 成功返回 { success:true, code:0, message:"ok", data:{ id, receivedAt, duplicate } }
+# 重复上报（同 traceCode + internalCode）返回 200，duplicate=true，不重复入库
+# 参数错误 400（code 1001 必填缺失 / 1002 格式长度错误），服务异常 500（code 5000）
+POST {{SJZ_WCS_HostAddress}}/api/scan/report
+Content-Type: application/json
+
+{
+  "productionDate": "2026-10-28",
+  "productBatchNo": "20261028A01",
+  "expiryDate": "2028-10-27",
+  "traceCode": "81234567890123456789",
+  "internalCode": "GY20261028001"
+}
+
+###
+
+# 扫码上报：模拟重复上报（与上一条同 traceCode/internalCode，应返回 duplicate=true）
+POST {{SJZ_WCS_HostAddress}}/api/scan/report
+Content-Type: application/json
+
+{
+  "productionDate": "2026-10-28",
+  "productBatchNo": "20261028A01",
+  "expiryDate": "2028-10-27",
+  "traceCode": "81234567890123456789",
+  "internalCode": "GY20261028001"
+}
+
+###
+
+# 扫码上报：参数错误用例（缺 traceCode，应返回 400 + code 1001）
+POST {{SJZ_WCS_HostAddress}}/api/scan/report
+Content-Type: application/json
+
+{
+  "productionDate": "2026-10-28",
+  "productBatchNo": "20261028A01",
+  "expiryDate": "2028-10-27",
+  "internalCode": "GY20261028002"
+}
+
+###

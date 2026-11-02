@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- S7.Net：西门子 S7 协议客户端，和现场 1200/1500 PLC 通信 -->
+    <PackageReference Include="S7netplus" Version="0.20.0" />
+    <!-- SqlSugar：日志落库服务直接使用 ISqlSugarClient（单例由 Web 层注册） -->
+    <PackageReference Include="SqlSugarCore" Version="5.1.4.221" />
+  </ItemGroup>
+
+  <!-- 提供 IConfiguration / ILogger / BackgroundService 等宿主抽象，与 Web 项目共用同一套运行时版本 -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Interface\Interface.csproj" />
+    <ProjectReference Include="..\Model\Model.csproj" />
+  </ItemGroup>
+
+</Project>
