@@ -2,7 +2,7 @@ using SqlSugar;
 
 namespace Model.Entities
 {
-    // RGV 设备信息表：一台 RGV 对应一条记录（PLC 侧设备信息）
+    /// RGV 设备信息表：一台 RGV 对应一条记录（PLC 侧设备信息）
     public class RGVinfo
     {
         [SugarColumn(IsPrimaryKey = true, IsIdentity = true)]

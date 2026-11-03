@@ -47,22 +47,22 @@ namespace Service.Tasks
             }
 
             _logger.LogInformation("任务调度服务启动：间隔 {Interval}ms", intervalMs);
-            // 任务调度服务停止时，退出循环
+            /// 任务调度服务停止时，退出循环
             while (stoppingToken.IsCancellationRequested == false)
             {
                 try
                 {
-                    // 调度服务内部已捕获异常并记录日志，不会抛出到这里
+                    /// 调度服务内部已捕获异常并记录日志，不会抛出到这里
                     await _taskSchedulingService.TickAsync(stoppingToken);
                 }
-                // 任务调度服务停止时，退出循环
+                /// 任务调度服务停止时，退出循环
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
                     break;
                 }
                 catch (Exception ex)
                 {
-                    // 单轮异常不影响下一轮；任务本身的状态异常在服务内已捕获并置为 Failed
+                    /// 单轮异常不影响下一轮；任务本身的状态异常在服务内已捕获并置为 Failed
                     _logger.LogError(ex, "任务调度轮次异常");
                 }
 

@@ -49,7 +49,7 @@ namespace Service.Logging
             }
             catch (Exception ex)
             {
-                // 日志表写失败不能让业务流程跟着失败：这里只记录到进程日志，便于本机排查
+                /// 日志表写失败不能让业务流程跟着失败：这里只记录到进程日志，便于本机排查
                 _logger.LogError(ex, "写日志失败：{Category}/{Action}", entry.Category, entry.Action);
             }
         }

@@ -9,40 +9,40 @@ namespace Model.PLC
     /// </summary>
     public class PlcSnapshot
     {
-        /// <summary>设备编码（PlcConfig.Name）</summary>
+        // 设备编码（PlcConfig.Name）
         public string Plccode { get; set; } = "";
 
-        /// <summary>采集时连接是否正常</summary>
+        // 采集时连接是否正常
         public bool Connected { get; set; }
 
-        /// <summary>每次更新自增，用于判断快照是否已刷新</summary>
+        // 每次更新自增，用于判断快照是否已刷新
         public long Version { get; set; }
 
-        /// <summary>最近一次更新时间（本机时间）</summary>
+        // 最近一次更新时间（本机时间）
         public DateTime UpdatedAt { get; set; }
 
-        /// <summary>DB600 解析结果；读取失败时为 null</summary>
+        // DB600 解析结果；读取失败时为 null
         public DestackerDb600? Db600 { get; set; }
 
-        /// <summary>DB600 最近一次读取成功的时间</summary>
+        // DB600 最近一次读取成功的时间
         public DateTime? Db600Time { get; set; }
 
-        /// <summary>DB600 是否读取成功</summary>
+        // DB600 是否读取成功
         public bool Db600Ok { get; set; }
 
-        /// <summary>DB600 最近一次读取失败的说明</summary>
+        // DB600 最近一次读取失败的说明
         public string Db600Error { get; set; } = "";
 
-        /// <summary>DB500 解析结果；读取失败时为 null</summary>
+        // DB500 解析结果；读取失败时为 null
         public DestackerDb500? Db500 { get; set; }
 
-        /// <summary>DB500 最近一次读取成功的时间</summary>
+        // DB500 最近一次读取成功的时间
         public DateTime? Db500Time { get; set; }
 
-        /// <summary>DB500 是否读取成功</summary>
+        // DB500 是否读取成功
         public bool Db500Ok { get; set; }
 
-        /// <summary>DB500 最近一次读取失败的说明</summary>
+        // DB500 最近一次读取失败的说明
         public string Db500Error { get; set; } = "";
     }
 }

@@ -7,52 +7,46 @@ namespace Model.PLC
     /// </summary>
     public class PlcConfig
     {
-        /// <summary>设备编码，如 RGV01、PLC1，接口和日志里用它区分设备</summary>
+        // 设备编码，如 RGV01、PLC1，接口和日志里用它区分设备
         public string Name { get; set; } = "";
 
-        /// <summary>展示名称，如 RGV小车1、拆垛PLC1（61xx/62xx段）</summary>
+        // 展示名称，如 RGV小车1、拆垛PLC1（61xx/62xx段）
         public string DisplayName { get; set; } = "";
 
-        /// <summary>设备类型：RGV=小车，Destacker=拆垛段 PLC</summary>
+        // 设备类型：RGV=小车，Destacker=拆垛段 PLC
         public string DeviceType { get; set; } = "";
 
-        /// <summary>设备号（协议里的编号），从 1 开始</summary>
+        // 设备号（协议里的编号），从 1 开始
         public int DeviceNo { get; set; } = 0;
 
-        /// <summary>
-        /// PLC 的 IP 地址。现场地址未确定时保持空字符串：
-        /// 客户端不会对空地址发起 TCP 连接，后台重连服务会直接跳过，等地址补充后自动生效。
-        /// </summary>
+        // PLC 的 IP 地址。现场地址未确定时保持空字符串：
+        // 客户端不会对空地址发起 TCP 连接，后台重连服务会直接跳过，等地址补充后自动生效。
         public string Ip { get; set; } = "";
 
-        /// <summary>通讯协议，目前只支持 S7</summary>
+        // 通讯协议，目前只支持 S7
         public string Protocol { get; set; } = "S7";
 
-        /// <summary>S7.Net 的 CpuType 枚举名：S71200 / S71500 / S7300 / S7400 / S7200 / S7200Smart</summary>
+        // S7.Net 的 CpuType 枚举名：S71200 / S71500 / S7300 / S7400 / S7200 / S7200Smart
         public string CpuType { get; set; } = "S71200";
 
-        /// <summary>端口，S7 协议默认 102</summary>
+        // 端口，S7 协议默认 102
         public int Port { get; set; } = 102;
 
-        /// <summary>机架号</summary>
+        // 机架号
         public int Rack { get; set; } = 0;
 
-        /// <summary>槽号</summary>
+        // 槽号
         public int Slot { get; set; } = 1;
 
-        /// <summary>
-        /// 上位机读取 PLC 数据的 DB 块号（PLC → WCS）。
-        /// 拆垛 PLC 约定为 DB600，0 表示尚未配置。
-        /// </summary>
+        // 上位机读取 PLC 数据的 DB 块号（PLC → WCS）。
+        // 拆垛 PLC 约定为 DB600，0 表示尚未配置。
         public int ReadDbNumber { get; set; } = 0;
 
-        /// <summary>
-        /// 上位机写入 PLC 数据的 DB 块号（WCS → PLC）。
-        /// 拆垛 PLC 约定为 DB500，0 表示尚未配置。
-        /// </summary>
+        // 上位机写入 PLC 数据的 DB 块号（WCS → PLC）。
+        // 拆垛 PLC 约定为 DB500，0 表示尚未配置。
         public int WriteDbNumber { get; set; } = 0;
 
-        /// <summary>读/写超时（毫秒），超过该时间无响应即视为断线</summary>
+        // 读/写超时（毫秒），超过该时间无响应即视为断线
         public int Timeout { get; set; } = 3000;
     }
 }

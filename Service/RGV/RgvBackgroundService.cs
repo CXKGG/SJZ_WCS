@@ -58,7 +58,7 @@ namespace Service.RGV
                     break;
                 }
 
-                // TODO RGV 协议确定后在这里补：读 RGV 状态、下发搬运任务、处理到位/完成信号。
+                /// TODO RGV 协议确定后在这里补：读 RGV 状态、下发搬运任务、处理到位/完成信号。
             }
 
             _logger.LogInformation("RGV 业务服务已停止");

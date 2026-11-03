@@ -5,19 +5,19 @@ namespace Model.Dtos
     /// </summary>
     public class ScanReportRequest
     {
-        /// <summary>生产日期，格式 YYYY-MM-DD（也兼容 YYYYMMDD）</summary>
+        // 生产日期，格式 YYYY-MM-DD（也兼容 YYYYMMDD）
         public string ProductionDate { get; set; } = "";
 
-        /// <summary>产品批号，最长 32</summary>
+        // 产品批号，最长 32
         public string ProductBatchNo { get; set; } = "";
 
-        /// <summary>有效日期，格式 YYYY-MM-DD（也兼容 YYYYMMDD）</summary>
+        // 有效日期，格式 YYYY-MM-DD（也兼容 YYYYMMDD）
         public string ExpiryDate { get; set; } = "";
 
-        /// <summary>产品追溯码，最长 64</summary>
+        // 产品追溯码，最长 64
         public string TraceCode { get; set; } = "";
 
-        /// <summary>内部管理码，最长 64</summary>
+        // 内部管理码，最长 64
         public string InternalCode { get; set; } = "";
     }
 
@@ -26,25 +26,25 @@ namespace Model.Dtos
     /// </summary>
     public class ScanReportResult
     {
-        /// <summary>是否成功</summary>
+        // 是否成功
         public bool Success { get; set; }
 
-        /// <summary>业务码：200 成功、400 参数错误、500 系统异常（与 HTTP 状态码一致）</summary>
+        // 业务码：200 成功、400 参数错误、500 系统异常（与 HTTP 状态码一致）
         public int Code { get; set; }
 
-        /// <summary>错误说明（成功时为 ok）</summary>
+        // 错误说明（成功时为 ok）
         public string Message { get; set; } = "";
 
-        /// <summary>本次接收的条数：新增入库为 1，重复上报为 0</summary>
+        // 本次接收的条数：新增入库为 1，重复上报为 0
         public int Count { get; set; }
 
-        /// <summary>记录接收时间（新增为本次时间，重复为原记录时间）</summary>
+        // 记录接收时间（新增为本次时间，重复为原记录时间）
         public DateTime ReceivedAt { get; set; }
 
-        /// <summary>是否重复上报（按追溯码 + 内部管理码判重）</summary>
+        // 是否重复上报（按追溯码 + 内部管理码判重）
         public bool Duplicate { get; set; }
 
-        /// <summary>true 表示服务内部异常（HTTP 500），false 表示参数类错误（HTTP 400）</summary>
+        // true 表示服务内部异常（HTTP 500），false 表示参数类错误（HTTP 400）
         public bool IsSystemError { get; set; }
     }
 
@@ -53,16 +53,16 @@ namespace Model.Dtos
     /// </summary>
     public class ScanReportResponse
     {
-        /// <summary>业务码：200 成功、400 参数错误、500 系统异常</summary>
+        // 业务码：200 成功、400 参数错误、500 系统异常
         public int Code { get; set; }
 
-        /// <summary>是否成功</summary>
+        // 是否成功
         public bool Success { get; set; }
 
-        /// <summary>提示信息，成功为 ok，失败为具体原因</summary>
+        // 提示信息，成功为 ok，失败为具体原因
         public string Message { get; set; } = "";
 
-        /// <summary>数据部分（失败时为 null）</summary>
+        // 数据部分（失败时为 null）
         public ScanReportData? Data { get; set; }
     }
 
@@ -71,13 +71,13 @@ namespace Model.Dtos
     /// </summary>
     public class ScanReportData
     {
-        /// <summary>本次接收条数：新增入库为 1，重复上报为 0</summary>
+        // 本次接收条数：新增入库为 1，重复上报为 0
         public int Count { get; set; }
 
-        /// <summary>接收时间，格式 yyyy-MM-dd HH:mm:ss（含时分秒）</summary>
+        // 接收时间，格式 yyyy-MM-dd HH:mm:ss（含时分秒）
         public string Date { get; set; } = "";
 
-        /// <summary>是否重复上报</summary>
+        // 是否重复上报
         public bool Duplicate { get; set; }
     }
 }

@@ -27,37 +27,37 @@ namespace SJZ_WCS.Config
     {
         protected override void Load(ContainerBuilder builder)
         {
-            // 1. SqlSugar：SqlSugarScope 是线程安全的单例客户端，Controller / 后台服务共用
+            /// 1. SqlSugar：SqlSugarScope 是线程安全的单例客户端，Controller / 后台服务共用
             builder.Register(c =>
             {
                 IConfiguration configuration = c.Resolve<IConfiguration>();
                 return SugarConfig.GetInstance(configuration);
             }).As<ISqlSugarClient>().SingleInstance();
 
-            // 2. PLC 设备配置（appsettings.json 的 Plcs 节）：只读配置，解析一次后单例注入
+            /// 2. PLC 设备配置（appsettings.json 的 Plcs 节）：只读配置，解析一次后单例注入
             builder.Register(c =>
             {
                 IConfiguration configuration = c.Resolve<IConfiguration>();
                 return configuration.GetSection("Plcs").Get<List<PlcConfig>>() ?? new List<PlcConfig>();
             }).As<List<PlcConfig>>().SingleInstance();
 
-            // 3. 日志服务：直接写 SysLog 表，不再有队列/落库后台服务
+            /// 3. 日志服务：直接写 SysLog 表，不再有队列/落库后台服务
             builder.RegisterType<LogService>().As<ILogService>().SingleInstance();
 
-            // 4. PLC 服务：连接 + 读写 + 快照 + 发送缓存 + 重连，原来 4 个接口合成这一个
+            /// 4. PLC 服务：连接 + 读写 + 快照 + 发送缓存 + 重连，原来 4 个接口合成这一个
             builder.RegisterType<PlcService>().As<IPlcService>().SingleInstance();
 
-            // 5. 任务调度服务：任务状态机推进
+            /// 5. 任务调度服务：任务状态机推进
             builder.RegisterType<TaskScheduling>().As<ITaskSchedulingService>().SingleInstance();
 
-            // 6. 扫码上报服务：接收上位机上报的产品信息，校验后写 scanrecord 表
+            /// 6. 扫码上报服务：接收上位机上报的产品信息，校验后写 scanrecord 表
             builder.RegisterType<ScanRecordService>().As<IScanRecordService>().SingleInstance();
 
-            // 7. 系统用户服务：登录校验（库内明文密码比对），日志里的操作人来自这里
+            /// 7. 系统用户服务：登录校验（库内明文密码比对），日志里的操作人来自这里
             builder.RegisterType<UserService>().As<IUserService>().SingleInstance();
 
-            // 8. 后台服务（3 个）：PLC 业务、RGV 业务、任务调度
-            //    .As<IHostedService>()：注册成宿主服务，应用启动时会自动开始执行
+            /// 8. 后台服务（3 个）：PLC 业务、RGV 业务、任务调度
+            ///    .As<IHostedService>()：注册成宿主服务，应用启动时会自动开始执行
             builder.RegisterType<PlcBackgroundService>().As<IHostedService>().SingleInstance();
             builder.RegisterType<RgvBackgroundService>().As<IHostedService>().SingleInstance();
             builder.RegisterType<TaskSchedulingBackgroundService>().As<IHostedService>().SingleInstance();

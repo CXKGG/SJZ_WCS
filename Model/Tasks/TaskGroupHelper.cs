@@ -9,10 +9,10 @@ namespace Model.Tasks
     /// </summary>
     public static class TaskGroupHelper
     {
-        /// <summary>拆垛工位尾号：拆垛机 1、拆垛机 2（如 6105 / 6106）</summary>
+        // 拆垛工位尾号：拆垛机 1、拆垛机 2（如 6105 / 6106）
         public const int DestackSide1 = 5;
 
-        /// <summary>拆垛工位尾号：拆垛机 1、拆垛机 2（如 6105 / 6106）</summary>
+        // 拆垛工位尾号：拆垛机 1、拆垛机 2（如 6105 / 6106）
         public const int DestackSide2 = 6;
 
         /// <summary>工位号 → 任务组（按站群号百位段：61/62→组1，63/64→组2，65/66→组3，67→组4）</summary>

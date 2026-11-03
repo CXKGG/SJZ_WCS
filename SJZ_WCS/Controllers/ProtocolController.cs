@@ -105,7 +105,7 @@ namespace SJZ_WCS.Controllers
     /// <summary>十六进制报文请求体。</summary>
     public class DbHexRequest
     {
-        /// <summary>十六进制字符串（可带空格、短横线、0x 前缀）</summary>
+        // 十六进制字符串（可带空格、短横线、0x 前缀）
         public string Hex { get; set; } = "";
     }
 }

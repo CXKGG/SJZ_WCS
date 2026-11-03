@@ -29,21 +29,21 @@ namespace Service.PLC
         private readonly ILogService _logService;
         private readonly ILogger<PlcService> _logger;
 
-        /// <summary>配置顺序（接口输出、快照顺序都按它来，和 appsettings.json 一致）</summary>
+        // 配置顺序（接口输出、快照顺序都按它来，和 appsettings.json 一致）
         private readonly List<string> _names = new List<string>();
 
-        /// <summary>设备编码 → S7 客户端（大小写不敏感）</summary>
+        // 设备编码 → S7 客户端（大小写不敏感）
         private readonly Dictionary<string, S7PlcClient> _clients =
             new Dictionary<string, S7PlcClient>(StringComparer.OrdinalIgnoreCase);
 
-        /// <summary>PLC 实时快照：更新时整体替换引用，读方拿到的总是完整对象</summary>
+        // PLC 实时快照：更新时整体替换引用，读方拿到的总是完整对象
         private readonly ConcurrentDictionary<string, PlcSnapshot> _snapshots =
             new ConcurrentDictionary<string, PlcSnapshot>(StringComparer.OrdinalIgnoreCase);
 
-        /// <summary>保护轮询失败去重字典</summary>
+        // 保护轮询失败去重字典
         private readonly object _pollLogLock = new object();
 
-        /// <summary>每台 PLC 每块数据最近一次的失败信息：失败原因不变就不重复写日志</summary>
+        // 每台 PLC 每块数据最近一次的失败信息：失败原因不变就不重复写日志
         private readonly Dictionary<string, string> _lastPollErrors =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 

@@ -101,19 +101,19 @@ namespace Service.PLC
             {
                 try
                 {
-                    // 1) 重连：按 ReconnectSeconds 折算的圈数执行
+                    /// 1) 重连：按 ReconnectSeconds 折算的圈数执行
                     if (autoReconnect && loop % loopsPerReconnect == 0)
                     {
                         await _plcService.ReconnectDisconnectedAsync(stoppingToken);
                     }
 
-                    // 2) 采集：每圈都读 DB600/DB500，刷新任务调度用的内存快照
+                    /// 2) 采集：每圈都读 DB600/DB500，刷新任务调度用的内存快照
                     if (pollEnabled)
                     {
                         await _plcService.PollOnceAsync(stoppingToken);
                     }
 
-                    // 3) 发送缓存：按 PollSeconds 折算的圈数执行
+                    /// 3) 发送缓存：按 PollSeconds 折算的圈数执行
                     if (loop % loopsPerSend == 0)
                     {
                         await _plcService.ProcessSendQueueAsync(batchSize, stoppingToken);
@@ -127,7 +127,7 @@ namespace Service.PLC
                 }
                 catch (Exception ex)
                 {
-                    // 后台服务不能因为单轮异常退出（宿主默认会因此停掉整个应用）
+                    /// 后台服务不能因为单轮异常退出（宿主默认会因此停掉整个应用）
                     _logger.LogError(ex, "PLC 后台服务单轮执行异常，下一轮继续");
                     _logService.WriteException(LogCategory.System, LogRiskLevel.Medium,
                         "PLC", "BackgroundLoop", "PLC 后台服务单轮执行异常", ex);

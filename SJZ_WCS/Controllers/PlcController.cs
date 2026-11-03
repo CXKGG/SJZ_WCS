@@ -319,10 +319,10 @@ namespace SJZ_WCS.Controllers
     /// <summary>DB 块写入请求体</summary>
     public class PlcDbWriteRequest
     {
-        /// <summary>从 DB 的第几个字节开始写</summary>
+        // 从 DB 的第几个字节开始写
         public int StartByte { get; set; } = 0;
 
-        /// <summary>要写入的字节内容（十六进制字符串）</summary>
+        // 要写入的字节内容（十六进制字符串）
         public string Hex { get; set; } = "";
     }
 }

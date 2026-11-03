@@ -124,14 +124,14 @@ namespace SJZ_WCS.Controllers
             string? userName = Request.Headers["X-User-Name"].FirstOrDefault();
             if (!string.IsNullOrWhiteSpace(userName))
             {
-                // 前端用 encodeURIComponent 编码后放进请求头，这里还原成中文用户名
+                /// 前端用 encodeURIComponent 编码后放进请求头，这里还原成中文用户名
                 try
                 {
                     userName = Uri.UnescapeDataString(userName);
                 }
                 catch
                 {
-                    // 编码异常时保留原值，不阻断日志写入
+                    /// 编码异常时保留原值，不阻断日志写入
                 }
             }
 

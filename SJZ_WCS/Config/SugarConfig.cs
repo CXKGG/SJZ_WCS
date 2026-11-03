@@ -5,9 +5,7 @@ using SqlSugar;
 
 namespace SJZ_WCS.Config
 {
-    /// <summary>
     /// SqlSugar 客户端工厂：从 appsettings.json 的 ConnectionStrings:Default 读取 MySQL 连接串
-    /// </summary>
     public class SugarConfig
     {
         public static SqlSugarScope GetInstance(IConfiguration configuration)
@@ -28,7 +26,7 @@ namespace SJZ_WCS.Config
                     InitKeyType = InitKeyType.Attribute // 读取实体上的 [SugarColumn] 特性
                 });
 
-            // 开启控制台打印 SQL，方便排查问题
+            /// 开启控制台打印 SQL，方便排查问题
             db.Aop.OnLogExecuting = (sql, pars) =>
             {
                 Console.WriteLine("执行 SQL: " + sql);
@@ -47,19 +45,46 @@ namespace SJZ_WCS.Config
             ISqlSugarClient db = scope.ServiceProvider.GetRequiredService<ISqlSugarClient>();
             IConfiguration configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
-            // MySQL 下 CreateDatabase 只在库不存在时创建（本项目库名 sjz_wcs）
+            /// MySQL 下 CreateDatabase 只在库不存在时创建（本项目库名 sjz_wcs）
             db.DbMaintenance.CreateDatabase();
 
-            // 实体建表：设备信息（拆垛 PLC / RGV）+ 系统日志 + PLC 发送缓存 + 拆垛任务 + 扫码上报记录 + 系统用户
+            /// 实体建表：设备信息（拆垛 PLC / RGV）+ 系统日志 + PLC 发送缓存 + 拆垛任务 + 扫码上报记录 + 系统用户
             db.CodeFirst.InitTables(typeof(PLCinfo), typeof(RGVinfo), typeof(SysLog), typeof(PlcSendMsg),
                 typeof(TaskInfo), typeof(ScanRecord), typeof(SysUser));
 
-            // 设备信息初始化：以 appsettings.json 为数据源，重复启动不会产生重复记录
+            /// 任务号唯一索引兜底（见 TaskInfo.taskno 注释）
+            EnsureTaskNoUniqueIndex(db);
+
+            /// 设备信息初始化：以 appsettings.json 为数据源，重复启动不会产生重复记录
             SeedPlcInfo(db, configuration);
             SeedRgvInfo(db, configuration);
 
-            // 系统用户初始化：表里没有账号时建一个默认管理员（admin / 123456），方便先登录调试
+            /// 系统用户初始化：表里没有账号时建一个默认管理员（admin / 123456），方便先登录调试
             SeedSysUser(db);
+        }
+
+        /// <summary>
+        /// 保证 taskinfo.taskno 有唯一索引：CodeFirst 不会给已存在的表自动补索引，
+        /// 所以每次启动显式检查并在缺失时创建，作为 taskno 全局唯一的最强兜底。
+        /// </summary>
+        private static void EnsureTaskNoUniqueIndex(ISqlSugarClient db)
+        {
+            const string indexName = "uk_taskinfo_taskno";
+            try
+            {
+                var dt = db.Ado.GetDataTable($"SHOW INDEX FROM taskinfo WHERE Key_name = '{indexName}'");
+                if (dt.Rows.Count > 0)
+                {
+                    return;
+                }
+
+                db.Ado.ExecuteCommand($"CREATE UNIQUE INDEX {indexName} ON taskinfo (taskno);");
+            }
+            catch (Exception ex)
+            {
+                /// 其它实例已抢先建好、或表暂不可用：记录但不阻断启动（应用启动不依赖该索引）
+                Console.WriteLine($"[WARN] 创建 taskinfo.taskno 唯一索引 {indexName} 失败（可忽略若已存在）：{ex.Message}");
+            }
         }
 
         /// <summary>
@@ -105,7 +130,7 @@ namespace SJZ_WCS.Config
                 }
                 else
                 {
-                    // 配置是设备信息的数据源：名称、IP、型号等以 appsettings.json 为准
+                    /// 配置是设备信息的数据源：名称、IP、型号等以 appsettings.json 为准
                     existing.plcname = plc.DisplayName;
                     existing.ipaddress = plc.Ip;
                     existing.port = plc.Port.ToString();
@@ -161,7 +186,7 @@ namespace SJZ_WCS.Config
                 }
                 else
                 {
-                    // 配置是设备信息的数据源：名称、IP、型号等以 appsettings.json 为准
+                    /// 配置是设备信息的数据源：名称、IP、型号等以 appsettings.json 为准
                     existing.plcname = plc.DisplayName;
                     existing.ipaddress = plc.Ip;
                     existing.port = plc.Port.ToString();

@@ -8,7 +8,7 @@ namespace Service.Protocol
     /// </summary>
     public static class PLCDb500Codec
     {
-        /// <summary>协议长度（字节）。</summary>
+        // 协议长度（字节）。
         public const int Length = 171;
 
         #region 解析（字节数组 → 模型）

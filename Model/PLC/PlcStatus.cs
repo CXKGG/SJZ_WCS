@@ -9,7 +9,7 @@ namespace Model.PLC
         public int DeviceNo { get; set; }
         public string Ip { get; set; } = "";
 
-        /// <summary>通讯协议</summary>
+        // 通讯协议
         public string Protocol { get; set; } = "";
 
         public string CpuType { get; set; } = "";
@@ -17,19 +17,19 @@ namespace Model.PLC
         public int Rack { get; set; }
         public int Slot { get; set; }
 
-        /// <summary>上位机读取 PLC 的 DB 块号（PLC → WCS）</summary>
+        // 上位机读取 PLC 的 DB 块号（PLC → WCS）
         public int ReadDbNumber { get; set; }
 
-        /// <summary>上位机写入 PLC 的 DB 块号（WCS → PLC）</summary>
+        // 上位机写入 PLC 的 DB 块号（WCS → PLC）
         public int WriteDbNumber { get; set; }
 
-        /// <summary>当前是否已连接</summary>
+        // 当前是否已连接
         public bool IsConnected { get; set; }
 
-        /// <summary>最近一次连接失败/读写失败的报错</summary>
+        // 最近一次连接失败/读写失败的报错
         public string LastError { get; set; } = "";
 
-        /// <summary>最近一次连接成功的时间</summary>
+        // 最近一次连接成功的时间
         public DateTime? LastConnectTime { get; set; }
     }
 }

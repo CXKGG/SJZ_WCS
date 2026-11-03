@@ -9,28 +9,28 @@ namespace Model.Dtos
     /// </summary>
     public class FrontendLogRequest
     {
-        /// <summary>功能模块，如 "前端/设备监控"。</summary>
+        // 功能模块，如 "前端/设备监控"。
         public string Module { get; set; } = "";
 
-        /// <summary>动作名称，如 "页面访问"、"点击 连接"、"前端异常"。</summary>
+        // 动作名称，如 "页面访问"、"点击 连接"、"前端异常"。
         public string Action { get; set; } = "";
 
-        /// <summary>日志摘要（列表页展示的短文本）。</summary>
+        // 日志摘要（列表页展示的短文本）。
         public string Content { get; set; } = "";
 
-        /// <summary>详细信息（如页面路径、按钮文本、异常堆栈），可为空。</summary>
+        // 详细信息（如页面路径、按钮文本、异常堆栈），可为空。
         public string? Detail { get; set; }
 
-        /// <summary>操作对象，可为空（如 "PLC1"、"任务 T20261030001"）。</summary>
+        // 操作对象，可为空（如 "PLC1"、"任务 T20261030001"）。
         public string? Target { get; set; }
 
-        /// <summary>风险等级：1 低、2 中、3 高（默认低）。</summary>
+        // 风险等级：1 低、2 中、3 高（默认低）。
         public int RiskLevel { get; set; } = 1;
 
-        /// <summary>是否成功（默认成功）。</summary>
+        // 是否成功（默认成功）。
         public bool Success { get; set; } = true;
 
-        /// <summary>耗时（毫秒），可为空。</summary>
+        // 耗时（毫秒），可为空。
         public long ElapsedMs { get; set; }
     }
 }

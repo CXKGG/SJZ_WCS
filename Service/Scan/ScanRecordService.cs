@@ -17,16 +17,16 @@ namespace Service.Scan
     /// </summary>
     public class ScanRecordService : IScanRecordService
     {
-        /// <summary>业务码：成功（与 HTTP 200 一致）</summary>
+        // 业务码：成功（与 HTTP 200 一致）
         private const int CodeSuccess = 200;
 
-        /// <summary>业务码：请求参数错误（与 HTTP 400 一致）</summary>
+        // 业务码：请求参数错误（与 HTTP 400 一致）
         private const int CodeBadRequest = 400;
 
-        /// <summary>业务码：服务内部异常（与 HTTP 500 一致）</summary>
+        // 业务码：服务内部异常（与 HTTP 500 一致）
         private const int CodeSystemError = 500;
 
-        /// <summary>日期允许的几种输入写法（对端可能给 2026-10-28 或 20261028）</summary>
+        // 日期允许的几种输入写法（对端可能给 2026-10-28 或 20261028）
         private static readonly string[] DateFormats = { "yyyy-MM-dd", "yyyyMMdd", "yyyy/MM/dd", "yyyy.MM.dd" };
 
         private readonly ISqlSugarClient _db;
@@ -75,7 +75,7 @@ namespace Service.Scan
             string? normalizedExpiryDate = NormalizeDate(expiryDate);
             if (normalizedProductionDate == null || normalizedExpiryDate == null)
             {
-                // 兜底：格式校验通过但仍无法转换，返回参数错误，避免把 null 写进库
+                /// 兜底：格式校验通过但仍无法转换，返回参数错误，避免把 null 写进库
                 return Fail(CodeBadRequest, "日期格式应为 YYYY-MM-DD");
             }
 
@@ -109,7 +109,7 @@ namespace Service.Scan
                 record.sourceip = sourceIp;
                 record.receivedat = DateTime.Now;
 
-                // ExecuteReturnBigIdentityAsync：插入并返回自增主键
+                /// ExecuteReturnBigIdentityAsync：插入并返回自增主键
                 await _db.Insertable(record).ExecuteReturnBigIdentityAsync();
 
                 return new ScanReportResult
@@ -124,7 +124,7 @@ namespace Service.Scan
             }
             catch (Exception exception)
             {
-                // 数据库/未知异常：记高风险系统日志，返回 500（Controller 转成 HTTP 500）
+                /// 数据库/未知异常：记高风险系统日志，返回 500（Controller 转成 HTTP 500）
                 _logService.WriteException(LogCategory.System, LogRiskLevel.High, "扫码上报",
                     "POST /api/scan/report", "扫码上报入库失败", exception, target: internalCode);
 
@@ -212,7 +212,7 @@ namespace Service.Scan
             {
                 return null;
             }
-            // yyyy-MM-dd：固定输出格式，保证入库写法一致
+            /// yyyy-MM-dd：固定输出格式，保证入库写法一致
             return parsed.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         }
 

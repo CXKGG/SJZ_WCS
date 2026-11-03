@@ -2,7 +2,7 @@ using SqlSugar;
 
 namespace Model.Entities
 {
-    // PLC 设备信息表：一台 PLC 对应一条记录（拆垛段 S7-1500 等）
+    /// PLC 设备信息表：一台 PLC 对应一条记录（拆垛段 S7-1500 等）
     public class PLCinfo
     {
         [SugarColumn(IsPrimaryKey = true, IsIdentity = true)]

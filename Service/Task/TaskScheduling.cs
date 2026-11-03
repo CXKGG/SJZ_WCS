@@ -7,24 +7,24 @@ using Model.Logs;
 using Model.PLC;
 using Model.Protocol;
 using Model.Tasks;
+using MySqlConnector;
+using Service.Common;
 using Service.Protocol;
 using SqlSugar;
 using TaskStatus = Model.Tasks.TaskStatus;
 
 namespace Service.Tasks
 {
-    /// <summary>
     /// 拆垛任务调度实现。流程按《石家庄流程图20260929》拆成一个个 Step，每个 Step 对应流程图的判断节点，
-    /// 任务当前走到哪一步存在 TaskInfo.status（见 <see cref="TaskStatus"/>）。
+    /// 任务当前走到哪一步存在 TaskInfo.status（见 ）。
     /// 后台服务每 500ms 调一次 TickAsync，每次只推进一小步，所以 PLC 断线/上游慢都不会卡死线程。
     /// 已接入：任务来源 = PLC 到位信息（DB600 拆垛位托盘号）、拆垛工位 6105/6106 编号、
     /// 机器人拆垛完成 = PLC「拆盘完成托盘出」信号、叠盘机满 = DB600 垒托盘块「空盘满请求出盘」、
     /// 回叠盘机 = 写 DB500 叠盘机垒托盘块、去目标工位前判断相邻车公共行程冲突（有冲突就让行等待）。
     /// 拣选口完成 = RGV 小车 PLC 汇报（RGV 协议未提供，先留空）→ 再写回拆垛 PLC DB500「拣选口完成」。
-    /// 任务按 4 个任务组分开推进（见 <see cref="TaskGroup"/>：组1~组3 每组 1 台 PLC + 2 台车，组4 = PLC4 + 车7 独享叠盘机），
+    /// 任务按 4 个任务组分开推进（见 ：组1~组3 每组 1 台 PLC + 2 台车，组4 = PLC4 + 车7 独享叠盘机），
     /// 组与组之间互不影响。
     /// 尚未确定：WMS 托盘类型（川/田）、RGV 的 S7 协议（小车空闲判断、拣选口完成汇报、输送拣选口动作、出口等待）。
-    /// </summary>
     public class TaskScheduling : ITaskSchedulingService
     {
         private readonly ISqlSugarClient _db;
@@ -32,16 +32,19 @@ namespace Service.Tasks
         private readonly ILogService _logService;
         private readonly ILogger<TaskScheduling> _logger;
 
-        /// <summary>已提示过的空方法：同一空方法只提示一次，避免每 500ms 刷屏</summary>
+        // 雪花算法 ID 生成器（任务号来源，保证全局唯一，跨实例靠不同 workerId 区分）
+        private readonly SnowflakeIdGenerator _snowflake;
+
+        // 已提示过的空方法：同一空方法只提示一次，避免每 500ms 刷屏
         private readonly HashSet<string> _stubLogged = new HashSet<string>(StringComparer.Ordinal);
 
-        /// <summary>保护 _stubLogged（调度在后台线程，人工接口可能并发触发）</summary>
+        // 保护 _stubLogged（调度在后台线程，人工接口可能并发触发）
         private readonly object _stubLock = new object();
 
-        /// <summary>已记录过「等待相邻车」日志的任务 id：同一任务只写一条，让行后清掉</summary>
+        // 已记录过「等待相邻车」日志的任务 id：同一任务只写一条，让行后清掉
         private readonly HashSet<long> _conflictLogged = new HashSet<long>();
 
-        /// <summary>保护 _conflictLogged（后台调度线程与人工接口可能并发）</summary>
+        // 保护 _conflictLogged（后台调度线程与人工接口可能并发）
         private readonly object _conflictLock = new object();
 
         public TaskScheduling(ISqlSugarClient db, IPlcService plcService,
@@ -51,16 +54,29 @@ namespace Service.Tasks
             _plcService = plcService;
             _logService = logService;
             _logger = logger;
+            /// workerId 默认用进程号取模（同机多实例天然不同）；如需跨机多实例部署再改为从配置读取
+            _snowflake = new SnowflakeIdGenerator(Environment.ProcessId % 1024);
         }
 
         /// <summary>执行一轮调度：先取新任务落库，再逐个推进未结束的任务</summary>
         public async Task<int> TickAsync(CancellationToken cancellationToken = default)
         {
             // 1) 新任务来源：流程图「PLC托盘到位信息」→「输送线记录托盘时间、保存任务信息」
-            List<TaskInfo> newTasks = await FetchNewTasksAsync(cancellationToken);
+            //    BuildTaskNo 内部在系统时钟回拨时会抛异常，这里兜底，避免整轮调度中断
+            List<TaskInfo> newTasks;
+            try
+            {
+                newTasks = await FetchNewTasksAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "取新任务异常（如系统时钟回拨），本轮跳过新任务生成");
+                return 0;
+            }
+
             foreach (TaskInfo task in newTasks)
             {
-                // 任务调度后台服务停止时，直接退出
+                /// 任务调度后台服务停止时，直接退出
                 if (cancellationToken.IsCancellationRequested)
                 {
                     break;
@@ -73,7 +89,13 @@ namespace Service.Tasks
 
                 task.updatetime = DateTime.Now;
                 task.status = (int)TaskStatus.New;
-                await _db.Insertable(task).ExecuteReturnBigIdentityAsync();
+                // 入库时若 taskno 唯一键冲突（极端时钟回拨/并发），重试生成新号，最多 3 次；耗尽则放弃该任务（下一轮可重建）
+                bool inserted = await TryInsertNewTaskAsync(task, cancellationToken);
+                if (!inserted)
+                {
+                    continue;
+                }
+
                 WriteLog(LogRiskLevel.Low, "任务产生", "新任务 " + task.taskno + "，托盘 " + task.palletno);
             }
 
@@ -82,6 +104,7 @@ namespace Service.Tasks
             TaskGroup[] groups = new TaskGroup[] { TaskGroup.Group1, TaskGroup.Group2, TaskGroup.Group3, TaskGroup.Group4 };
             foreach (TaskGroup group in groups)
             {
+                /// 任务调度后台服务停止时，直接退出
                 if (cancellationToken.IsCancellationRequested)
                 {
                     break;
@@ -89,15 +112,19 @@ namespace Service.Tasks
 
                 switch (group)
                 {
+                    /// 业务组一
                     case TaskGroup.Group1:
                         await TickGroupAsync(TaskGroup.Group1, cancellationToken);
                         break;
+                    /// 业务组二
                     case TaskGroup.Group2:
                         await TickGroupAsync(TaskGroup.Group2, cancellationToken);
                         break;
+                    /// 业务组三
                     case TaskGroup.Group3:
                         await TickGroupAsync(TaskGroup.Group3, cancellationToken);
                         break;
+                    /// 业务组四
                     case TaskGroup.Group4:
                         await TickGroupAsync(TaskGroup.Group4, cancellationToken);
                         break;
@@ -221,35 +248,35 @@ namespace Service.Tasks
             switch (status)
             {
                 case TaskStatus.New:
-                    // 流程图：PLC 托盘到位信息
+                    /// 流程图：PLC 托盘到位信息
                     await StepWaitPalletArrivedAsync(task, cancellationToken);
                     break;
                 case TaskStatus.WaitStation:
-                    // 流程图：判断 1、2 号拆垛工位是否空闲
+                    /// 流程图：判断 1、2 号拆垛工位是否空闲
                     await StepWaitStationAsync(task, cancellationToken);
                     break;
                 case TaskStatus.WaitRgv:
-                    // 流程图：判断小车是否空闲（否 → 等待小车任务结束）
+                    /// 流程图：判断小车是否空闲（否 → 等待小车任务结束）
                     await StepWaitRgvAsync(task, cancellationToken);
                     break;
                 case TaskStatus.RobotDestacking:
-                    // 流程图：机器人拆垛工位 1/2 → 判断叠盘机是否满 → 判断托盘类型
+                    /// 流程图：机器人拆垛工位 1/2 → 判断叠盘机是否满 → 判断托盘类型
                     await StepRobotDestackAsync(task, cancellationToken);
                     break;
                 case TaskStatus.ReturnToStacker:
-                    // 流程图：回川/田字型叠盘机 → 去目标工位前判断公共行程范围内相邻车任务（有冲突就等待）
+                    /// 流程图：回川/田字型叠盘机 → 去目标工位前判断公共行程范围内相邻车任务（有冲突就等待）
                     await StepReturnToStackerAsync(task, cancellationToken);
                     break;
                 case TaskStatus.WaitPickStation:
-                    // 流程图：执行托盘回叠盘机、输送拣选口 → 判断是否有新任务
+                    /// 流程图：执行托盘回叠盘机、输送拣选口 → 判断是否有新任务
                     await StepWaitPickStationAsync(task, cancellationToken);
                     break;
                 case TaskStatus.WaitExit:
-                    // 流程图：回出口等待
+                    /// 流程图：回出口等待
                     await StepWaitExitAsync(task, cancellationToken);
                     break;
                 default:
-                    // Paused / Completed / Failed：不在自动推进范围内
+                    /// Paused / Completed / Failed：不在自动推进范围内
                     break;
             }
         }
@@ -337,7 +364,7 @@ namespace Service.Tasks
             bool adjacentBusy = await HasAdjacentTaskInPublicRangeAsync(task, cancellationToken);
             if (adjacentBusy)
             {
-                // 有冲突：停在 ReturnToStacker 等待，下一轮再判断
+                /// 有冲突：停在 ReturnToStacker 等待，下一轮再判断
                 return;
             }
 
@@ -384,9 +411,9 @@ namespace Service.Tasks
             await SetStatusAsync(task, TaskStatus.Completed, "");
         }
 
-        // ===========================================================================================
-        // 以下为外部交互方法：除「查快照」外当前都未确定，先留空，业务确认后逐个补充。
-        // ===========================================================================================
+        /// ===========================================================================================
+        /// 以下为外部交互方法：除「查快照」外当前都未确定，先留空，业务确认后逐个补充。
+        /// ===========================================================================================
 
         /// <summary>
         /// 取新任务：来源 = PLC 到位信息（用户 m01855 确认）。
@@ -396,6 +423,7 @@ namespace Service.Tasks
         private async Task<List<TaskInfo>> FetchNewTasksAsync(CancellationToken cancellationToken)
         {
             List<TaskInfo> tasks = new List<TaskInfo>();
+            //获取快照列表，遍历每个快照，检查拆垛工位的托盘号
             IReadOnlyList<PlcSnapshot> snapshots = _plcService.GetSnapshots();
             foreach (PlcSnapshot snapshot in snapshots)
             {
@@ -427,7 +455,7 @@ namespace Service.Tasks
                     {
                         continue;
                     }
-
+                    //组装任务：托盘号、工位号、任务组、车号、来源 = PLC，到库时再生成任务号和创建时间
                     TaskInfo task = new TaskInfo();
                     task.taskno = BuildTaskNo();
                     task.palletno = palletNo;
@@ -558,7 +586,7 @@ namespace Service.Tasks
             }
             else
             {
-                // 图纸上右侧「请求出」是 Int（不是 Bool），非 0 视为完成
+                /// 图纸上右侧「请求出」是 Int（不是 Bool），非 0 视为完成
                 requestOut = block.RightRequestOut != 0;
                 palletType = block.RightPalletType;
                 boxCount = block.RightBoxCount;
@@ -641,7 +669,7 @@ namespace Service.Tasks
             PlcSnapshot? snapshot = GetSnapshotByStation(task.stationno);
             if (snapshot == null || snapshot.Db500 == null || !snapshot.Db500Ok)
             {
-                // 还没采到 DB500 快照时不发指令，下一轮再试
+                /// 还没采到 DB500 快照时不发指令，下一轮再试
                 return Task.FromResult(false);
             }
 
@@ -830,13 +858,13 @@ namespace Service.Tasks
             return Task.FromResult(false);
         }
 
-        // ===========================================================================================
-        // 工位号 / 快照 辅助方法
-        // ===========================================================================================
+        /// ===========================================================================================
+        /// 工位号 / 快照 辅助方法
+        /// ===========================================================================================
 
-        /// <summary>排除使用的旧表说明：工位号/站群/组/PLC/RGV 的换算统一在 Model.Tasks.TaskGroupHelper（组4 只有 67xx，没有 68xx）</summary>
+        /// 排除使用的旧表说明：工位号/站群/组/PLC/RGV 的换算统一在 Model.Tasks.TaskGroupHelper（组4 只有 67xx，没有 68xx）
 
-        /// <summary>未结束的任务状态（判断工位是否被占用时用）</summary>
+        // 未结束的任务状态（判断工位是否被占用时用）
         private static readonly List<int> ActiveStatusValues = new List<int>
         {
             (int)TaskStatus.New,
@@ -849,14 +877,61 @@ namespace Service.Tasks
             (int)TaskStatus.Paused
         };
 
-        /// <summary>任务号自增序号（WMS 未接入前由 WCS 自编）</summary>
-        private static int _taskSeq;
-
-        /// <summary>生成 WCS 自编任务号：T + 时间 + 3 位序号</summary>
-        private static string BuildTaskNo()
+        /// <summary>生成 WCS 自编任务号：前缀 "WCS" + 雪花算法 ID（64 位，全局唯一、可反解时间戳）。
+        /// 原 "T+时间+序号" 与 "WCS+取模时间戳+随机数" 方案在多实例/重启/时钟回拨下无法保证唯一；
+        /// 现由 SnowflakeIdGenerator 保证唯一性，并由 taskinfo.taskno 唯一索引兜底（见 SugarConfig）。</summary>
+        private string BuildTaskNo()
         {
-            int seq = Interlocked.Increment(ref _taskSeq);
-            return "T" + DateTime.Now.ToString("yyyyMMddHHmmss") + seq.ToString("D3");
+            // 雪花算法生成全局唯一 ID（64 位），前缀 WCS
+            long id = _snowflake.NextId();
+            return "WCS" + id.ToString();
+        }
+
+        /// <summary>插入新任务，遇 taskno 唯一键冲突时重新生成任务号重试（最多 3 次）。返回是否成功入库。</summary>
+        private async Task<bool> TryInsertNewTaskAsync(TaskInfo task, CancellationToken cancellationToken)
+        {
+            const int maxRetry = 3;
+            for (int attempt = 0; ; attempt++)
+            {
+                try
+                {
+                    await _db.Insertable(task).ExecuteReturnBigIdentityAsync(cancellationToken);
+                    return true;
+                }
+                catch (Exception ex) when (IsDuplicateKeyException(ex))
+                {
+                    if (attempt >= maxRetry)
+                    {
+                        _logger.LogError(ex, "任务 {TaskNo} 唯一键冲突且重试 {Max} 次仍失败，放弃该任务", task.taskno, maxRetry);
+                        return false;
+                    }
+
+                    string oldNo = task.taskno;
+                    task.taskno = BuildTaskNo();
+                    _logger.LogWarning("任务号 {Old} 唯一键冲突，重试第 {Attempt} 次，新号 {New}",
+                        oldNo, attempt + 1, task.taskno);
+                }
+            }
+        }
+
+        /// <summary>判断是否 MySQL 唯一键冲突（错误码 1062）；SqlSugar 会把 MySqlException 包装在内部异常里</summary>
+        private static bool IsDuplicateKeyException(Exception ex)
+        {
+            for (Exception? e = ex; e != null; e = e.InnerException)
+            {
+                if (e is MySqlConnector.MySqlException mse && (int)mse.ErrorCode == 1062)
+                {
+                    return true;
+                }
+
+                if (e.Message.Contains("Duplicate entry", StringComparison.OrdinalIgnoreCase)
+                    || e.Message.Contains("1062", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>取工位所属 PLC 的快照，工位号非法或未采集时返回 null</summary>
@@ -919,9 +994,9 @@ namespace Service.Tasks
             return "";
         }
 
-        // ===========================================================================================
-        // 内部工具
-        // ===========================================================================================
+        /// ===========================================================================================
+        /// 内部工具
+        /// ===========================================================================================
 
         /// <summary>更新任务状态并落库</summary>
         private async Task SetStatusAsync(TaskInfo task, TaskStatus status, string error)

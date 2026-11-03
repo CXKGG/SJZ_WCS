@@ -14,40 +14,40 @@ namespace Model.Protocol
     {
         #region 北起段托盘输送交互信息（字节 0、32，各 32 字节）
 
-        /// <summary>北起段托盘输送交互信息[0]：61 段（6101、6102、6103 工位），字节 0 起，长 32 字节。</summary>
+        // 北起段托盘输送交互信息[0]：61 段（6101、6102、6103 工位），字节 0 起，长 32 字节。
         public DestackerFeedPutInfo Feed0 { get; set; } = new();
 
-        /// <summary>北起段托盘输送交互信息[1]：62 段（6201、6202、6203 工位），字节 32 起，长 32 字节。</summary>
+        // 北起段托盘输送交互信息[1]：62 段（6201、6202、6203 工位），字节 32 起，长 32 字节。
         public DestackerFeedPutInfo Feed1 { get; set; } = new();
 
         #endregion
 
         #region 出库至拆垛位（字节 64、84，各 20 字节）
 
-        /// <summary>出库至拆垛位[0]：6105 / 6106 拆垛位，字节 64 起，长 20 字节。</summary>
+        // 出库至拆垛位[0]：6105 / 6106 拆垛位，字节 64 起，长 20 字节。
         public DestackerOutboundPutInfo Outbound0 { get; set; } = new();
 
-        /// <summary>出库至拆垛位[1]：6205 / 6206 拆垛位，字节 84 起，长 20 字节。</summary>
+        // 出库至拆垛位[1]：6205 / 6206 拆垛位，字节 84 起，长 20 字节。
         public DestackerOutboundPutInfo Outbound1 { get; set; } = new();
 
         #endregion
 
         #region 拆垛完成托盘出（字节 104、132，各 28 字节）
 
-        /// <summary>拆垛完成托盘出[0]：6105 / 6106 拆垛位，字节 104 起，长 28 字节。</summary>
+        // 拆垛完成托盘出[0]：6105 / 6106 拆垛位，字节 104 起，长 28 字节。
         public DestackerUnstackDonePutInfo UnstackDone0 { get; set; } = new();
 
-        /// <summary>拆垛完成托盘出[1]：6205 / 6206 拆垛位，字节 132 起，长 28 字节。</summary>
+        // 拆垛完成托盘出[1]：6205 / 6206 拆垛位，字节 132 起，长 28 字节。
         public DestackerUnstackDonePutInfo UnstackDone1 { get; set; } = new();
 
         #endregion
 
         #region 垒托盘（字节 160、284，各 124 字节）
 
-        /// <summary>垒托盘[0]：6107 叠盘机，字节 160 起，长 124 字节（含托盘号 1~15）。</summary>
+        // 垒托盘[0]：6107 叠盘机，字节 160 起，长 124 字节（含托盘号 1~15）。
         public DestackerStackPutInfo Stack0 { get; set; } = new();
 
-        /// <summary>垒托盘[1]：6108 叠盘机，字节 284 起，长 124 字节（含托盘号 1~15）。</summary>
+        // 垒托盘[1]：6108 叠盘机，字节 284 起，长 124 字节（含托盘号 1~15）。
         public DestackerStackPutInfo Stack1 { get; set; } = new();
 
         #endregion
@@ -60,31 +60,31 @@ namespace Model.Protocol
     /// </summary>
     public class DestackerFeedPutInfo
     {
-        /// <summary>拣选口请求出（字节偏移 0 第 0 位，Boolean；xx01 工位）。</summary>
+        // 拣选口请求出（字节偏移 0 第 0 位，Boolean；xx01 工位）。
         public bool PickingRequestOut { get; set; }
 
-        /// <summary>拣选口托盘数量（字节偏移 2，Int16）。</summary>
+        // 拣选口托盘数量（字节偏移 2，Int16）。
         public short PickingPalletCount { get; set; }
 
-        /// <summary>拣选口托盘号（字节偏移 4，S7 String[6]，共 8 字节）。</summary>
+        // 拣选口托盘号（字节偏移 4，S7 String[6]，共 8 字节）。
         public string PickingPalletNo { get; set; } = "";
 
-        /// <summary>左出库口允许进盘（字节偏移 12 第 0 位，Boolean；xx02 工位）。</summary>
+        // 左出库口允许进盘（字节偏移 12 第 0 位，Boolean；xx02 工位）。
         public bool LeftInAllowed { get; set; }
 
-        /// <summary>左出库口进盘完成（字节偏移 12 第 1 位，Boolean）。</summary>
+        // 左出库口进盘完成（字节偏移 12 第 1 位，Boolean）。
         public bool LeftInDone { get; set; }
 
-        /// <summary>左出库口托盘号（字节偏移 14，S7 String[6]，共 8 字节）。</summary>
+        // 左出库口托盘号（字节偏移 14，S7 String[6]，共 8 字节）。
         public string LeftPalletNo { get; set; } = "";
 
-        /// <summary>右出库口允许进盘（字节偏移 22 第 0 位，Boolean；xx03 工位）。</summary>
+        // 右出库口允许进盘（字节偏移 22 第 0 位，Boolean；xx03 工位）。
         public bool RightInAllowed { get; set; }
 
-        /// <summary>右出库口进盘完成（字节偏移 22 第 1 位，Boolean）。</summary>
+        // 右出库口进盘完成（字节偏移 22 第 1 位，Boolean）。
         public bool RightInDone { get; set; }
 
-        /// <summary>右出库口托盘号（字节偏移 24，S7 String[6]，共 8 字节）。</summary>
+        // 右出库口托盘号（字节偏移 24，S7 String[6]，共 8 字节）。
         public string RightPalletNo { get; set; } = "";
     }
 
@@ -97,28 +97,28 @@ namespace Model.Protocol
     /// </summary>
     public class DestackerOutboundPutInfo
     {
-        /// <summary>左侧请求出盘至 RGV（字节偏移 0 第 0 位，Boolean）。</summary>
+        // 左侧请求出盘至 RGV（字节偏移 0 第 0 位，Boolean）。
         public bool LeftRequestOutToRgv { get; set; }
 
-        /// <summary>左侧拆垛位允许进盘（字节偏移 0 第 1 位，Boolean）。</summary>
+        // 左侧拆垛位允许进盘（字节偏移 0 第 1 位，Boolean）。
         public bool LeftInAllowed { get; set; }
 
-        /// <summary>左侧拆垛位允许进盘完成（字节偏移 0 第 2 位，Boolean）。</summary>
+        // 左侧拆垛位允许进盘完成（字节偏移 0 第 2 位，Boolean）。
         public bool LeftInDone { get; set; }
 
-        /// <summary>左侧拆垛位托盘号（字节偏移 2，S7 String[6]，共 8 字节）。</summary>
+        // 左侧拆垛位托盘号（字节偏移 2，S7 String[6]，共 8 字节）。
         public string LeftPalletNo { get; set; } = "";
 
-        /// <summary>右侧请求出盘至 RGV（字节偏移 10 第 0 位，Boolean）。</summary>
+        // 右侧请求出盘至 RGV（字节偏移 10 第 0 位，Boolean）。
         public bool RightRequestOutToRgv { get; set; }
 
-        /// <summary>右侧拆垛位允许进盘（字节偏移 10 第 1 位，Boolean）。</summary>
+        // 右侧拆垛位允许进盘（字节偏移 10 第 1 位，Boolean）。
         public bool RightInAllowed { get; set; }
 
-        /// <summary>右侧拆垛位允许进盘完成（字节偏移 10 第 2 位，Boolean）。</summary>
+        // 右侧拆垛位允许进盘完成（字节偏移 10 第 2 位，Boolean）。
         public bool RightInDone { get; set; }
 
-        /// <summary>右侧拆垛位托盘号（字节偏移 12，S7 String[6]，共 8 字节）。</summary>
+        // 右侧拆垛位托盘号（字节偏移 12，S7 String[6]，共 8 字节）。
         public string RightPalletNo { get; set; } = "";
     }
 
@@ -132,28 +132,28 @@ namespace Model.Protocol
     /// </summary>
     public class DestackerUnstackDonePutInfo
     {
-        /// <summary>左侧拆垛完成托盘请求出（字节偏移 0 第 0 位，Boolean）。</summary>
+        // 左侧拆垛完成托盘请求出（字节偏移 0 第 0 位，Boolean）。
         public bool LeftRequestOut { get; set; }
 
-        /// <summary>左侧托盘类型（字节偏移 2，Int16）。</summary>
+        // 左侧托盘类型（字节偏移 2，Int16）。
         public short LeftPalletType { get; set; }
 
-        /// <summary>左侧托盘箱数（字节偏移 4，Int16）。</summary>
+        // 左侧托盘箱数（字节偏移 4，Int16）。
         public short LeftBoxCount { get; set; }
 
-        /// <summary>左侧托盘号（字节偏移 6，S7 String[6]，共 8 字节）。</summary>
+        // 左侧托盘号（字节偏移 6，S7 String[6]，共 8 字节）。
         public string LeftPalletNo { get; set; } = "";
 
-        /// <summary>右侧拆垛完成托盘请求出（字节偏移 14，Int16，不是 Boolean）。</summary>
+        // 右侧拆垛完成托盘请求出（字节偏移 14，Int16，不是 Boolean）。
         public short RightRequestOut { get; set; }
 
-        /// <summary>右侧托盘类型（字节偏移 16，Int16）。</summary>
+        // 右侧托盘类型（字节偏移 16，Int16）。
         public short RightPalletType { get; set; }
 
-        /// <summary>右侧托盘箱数（字节偏移 18，Int16）。</summary>
+        // 右侧托盘箱数（字节偏移 18，Int16）。
         public short RightBoxCount { get; set; }
 
-        /// <summary>右侧托盘号（字节偏移 20，S7 String[6]，共 8 字节）。</summary>
+        // 右侧托盘号（字节偏移 20，S7 String[6]，共 8 字节）。
         public string RightPalletNo { get; set; } = "";
     }
 
@@ -166,61 +166,61 @@ namespace Model.Protocol
     /// </summary>
     public class DestackerStackPutInfo
     {
-        /// <summary>空盘允许进盘（字节偏移 0 第 0 位，Boolean）。</summary>
+        // 空盘允许进盘（字节偏移 0 第 0 位，Boolean）。
         public bool EmptyPalletInAllowed { get; set; }
 
-        /// <summary>空盘进盘完成（字节偏移 0 第 1 位，Boolean）。</summary>
+        // 空盘进盘完成（字节偏移 0 第 1 位，Boolean）。
         public bool EmptyPalletInDone { get; set; }
 
-        /// <summary>空盘满请求出盘（字节偏移 0 第 2 位，Boolean）。</summary>
+        // 空盘满请求出盘（字节偏移 0 第 2 位，Boolean）。
         public bool EmptyPalletFullRequestOut { get; set; }
 
-        /// <summary>托盘数量（字节偏移 2，Int16）。</summary>
+        // 托盘数量（字节偏移 2，Int16）。
         public short PalletCount { get; set; }
 
-        /// <summary>托盘号 1（字节偏移 4，S7 String[6]，共 8 字节）。</summary>
+        // 托盘号 1（字节偏移 4，S7 String[6]，共 8 字节）。
         public string PalletNo1 { get; set; } = "";
 
-        /// <summary>托盘号 2（字节偏移 12，S7 String[6]，共 8 字节）。</summary>
+        // 托盘号 2（字节偏移 12，S7 String[6]，共 8 字节）。
         public string PalletNo2 { get; set; } = "";
 
-        /// <summary>托盘号 3（字节偏移 20，S7 String[6]，共 8 字节）。</summary>
+        // 托盘号 3（字节偏移 20，S7 String[6]，共 8 字节）。
         public string PalletNo3 { get; set; } = "";
 
-        /// <summary>托盘号 4（字节偏移 28，S7 String[6]，共 8 字节）。</summary>
+        // 托盘号 4（字节偏移 28，S7 String[6]，共 8 字节）。
         public string PalletNo4 { get; set; } = "";
 
-        /// <summary>托盘号 5（字节偏移 36，S7 String[6]，共 8 字节）。</summary>
+        // 托盘号 5（字节偏移 36，S7 String[6]，共 8 字节）。
         public string PalletNo5 { get; set; } = "";
 
-        /// <summary>托盘号 6（字节偏移 44，S7 String[6]，共 8 字节）。</summary>
+        // 托盘号 6（字节偏移 44，S7 String[6]，共 8 字节）。
         public string PalletNo6 { get; set; } = "";
 
-        /// <summary>托盘号 7（字节偏移 52，S7 String[6]，共 8 字节）。</summary>
+        // 托盘号 7（字节偏移 52，S7 String[6]，共 8 字节）。
         public string PalletNo7 { get; set; } = "";
 
-        /// <summary>托盘号 8（字节偏移 60，S7 String[6]，共 8 字节）。</summary>
+        // 托盘号 8（字节偏移 60，S7 String[6]，共 8 字节）。
         public string PalletNo8 { get; set; } = "";
 
-        /// <summary>托盘号 9（字节偏移 68，S7 String[6]，共 8 字节）。</summary>
+        // 托盘号 9（字节偏移 68，S7 String[6]，共 8 字节）。
         public string PalletNo9 { get; set; } = "";
 
-        /// <summary>托盘号 10（字节偏移 76，S7 String[6]，共 8 字节）。</summary>
+        // 托盘号 10（字节偏移 76，S7 String[6]，共 8 字节）。
         public string PalletNo10 { get; set; } = "";
 
-        /// <summary>托盘号 11（字节偏移 84，S7 String[6]，共 8 字节）。</summary>
+        // 托盘号 11（字节偏移 84，S7 String[6]，共 8 字节）。
         public string PalletNo11 { get; set; } = "";
 
-        /// <summary>托盘号 12（字节偏移 92，S7 String[6]，共 8 字节）。</summary>
+        // 托盘号 12（字节偏移 92，S7 String[6]，共 8 字节）。
         public string PalletNo12 { get; set; } = "";
 
-        /// <summary>托盘号 13（字节偏移 100，S7 String[6]，共 8 字节）。</summary>
+        // 托盘号 13（字节偏移 100，S7 String[6]，共 8 字节）。
         public string PalletNo13 { get; set; } = "";
 
-        /// <summary>托盘号 14（字节偏移 108，S7 String[6]，共 8 字节）。</summary>
+        // 托盘号 14（字节偏移 108，S7 String[6]，共 8 字节）。
         public string PalletNo14 { get; set; } = "";
 
-        /// <summary>托盘号 15（字节偏移 116，S7 String[6]，共 8 字节）。</summary>
+        // 托盘号 15（字节偏移 116，S7 String[6]，共 8 字节）。
         public string PalletNo15 { get; set; } = "";
     }
 

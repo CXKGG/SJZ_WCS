@@ -40,7 +40,7 @@ namespace SJZ_WCS.Controllers
             string sourceIp = "";
             if (HttpContext.Connection.RemoteIpAddress != null)
             {
-                // 记录系统日志时，记录对端 IP（扫码端）便于追溯
+                /// 记录系统日志时，记录对端 IP（扫码端）便于追溯
                 sourceIp = HttpContext.Connection.RemoteIpAddress.ToString();
             }
             // 调用服务层处理扫码上报，返回结果（成功或失败）
@@ -48,7 +48,7 @@ namespace SJZ_WCS.Controllers
 
             if (!result.Success)
             {
-                // 扫码上报是扫码端与 WCS 的接口交互，记入系统日志（WMS 交互尚未对接，不能记 WMS 分类）
+                /// 扫码上报是扫码端与 WCS 的接口交互，记入系统日志（WMS 交互尚未对接，不能记 WMS 分类）
                 if (!result.IsSystemError)
                 {
                     _logService.WriteSystem(LogRiskLevel.Medium, "扫码上报", "POST /api/scan/report",
@@ -79,7 +79,7 @@ namespace SJZ_WCS.Controllers
 
             ScanReportData data = new ScanReportData();
             data.Count = result.Count;
-            // 接收时间按 yyyy-MM-dd HH:mm:ss 返回（对端便于直接展示，不带时区和小数秒）
+            /// 接收时间按 yyyy-MM-dd HH:mm:ss 返回（对端便于直接展示，不带时区和小数秒）
             data.Date = result.ReceivedAt.ToString("yyyy-MM-dd HH:mm:ss");
             data.Duplicate = result.Duplicate;
 

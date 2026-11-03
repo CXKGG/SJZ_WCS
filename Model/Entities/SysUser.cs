@@ -11,29 +11,29 @@ namespace Model.Entities
     /// </summary>
     public class SysUser
     {
-        /// <summary>主键，自增</summary>
+        // 主键，自增
         [SugarColumn(IsPrimaryKey = true, IsIdentity = true)]
         public long id { get; set; }
 
-        /// <summary>登录账号（唯一）</summary>
+        // 登录账号（唯一）
         public string usercode { get; set; } = "";
 
-        /// <summary>姓名（写日志时作为操作人显示）</summary>
+        // 姓名（写日志时作为操作人显示）
         public string username { get; set; } = "";
 
-        /// <summary>登录密码（按需求明文保存，仅内网使用）</summary>
+        // 登录密码（按需求明文保存，仅内网使用）
         public string password { get; set; } = "";
 
-        /// <summary>角色/岗位（可选，如 管理员、操作员）</summary>
+        // 角色/岗位（可选，如 管理员、操作员）
         public string role { get; set; } = "";
 
-        /// <summary>是否启用（停用的账号不能登录）</summary>
+        // 是否启用（停用的账号不能登录）
         public bool isactive { get; set; } = true;
 
-        /// <summary>创建时间</summary>
+        // 创建时间
         public DateTime createtime { get; set; }
 
-        /// <summary>更新时间</summary>
+        // 更新时间
         public DateTime updatetime { get; set; }
     }
 }

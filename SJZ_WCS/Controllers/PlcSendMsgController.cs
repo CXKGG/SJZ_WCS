@@ -132,22 +132,22 @@ namespace SJZ_WCS.Controllers
     /// <summary>写入发送缓存的请求体。</summary>
     public class PlcSendMsgEnqueueRequest
     {
-        /// <summary>目标设备编号，如 PLC1</summary>
+        // 目标设备编号，如 PLC1
         public string Plccode { get; set; } = "";
 
-        /// <summary>目标 DB 号，如 500</summary>
+        // 目标 DB 号，如 500
         public int DbNumber { get; set; }
 
-        /// <summary>起始字节</summary>
+        // 起始字节
         public int StartByte { get; set; }
 
-        /// <summary>要写入的字节内容（hex 字符串，可带空格/短横线/0x）</summary>
+        // 要写入的字节内容（hex 字符串，可带空格/短横线/0x）
         public string Hex { get; set; } = "";
 
-        /// <summary>业务类型（可空）</summary>
+        // 业务类型（可空）
         public string? BusinessType { get; set; }
 
-        /// <summary>关联业务号/任务号（可空）</summary>
+        // 关联业务号/任务号（可空）
         public string? BusinessId { get; set; }
     }
 }

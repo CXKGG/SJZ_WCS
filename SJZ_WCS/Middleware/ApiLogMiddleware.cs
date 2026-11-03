@@ -24,10 +24,10 @@ namespace SJZ_WCS.Middleware
     /// </summary>
     public sealed class ApiLogMiddleware
     {
-        /// <summary>默认不记录的路径前缀：OpenAPI 文档、Scalar 页面、日志查询接口本身</summary>
+        // 默认不记录的路径前缀：OpenAPI 文档、Scalar 页面、日志查询接口本身
         private static readonly string[] DefaultSkipPaths = new[] { "/openapi", "/scalar", "/api/logs" };
 
-        /// <summary>请求体里 password 字段的掩码正则：日志里绝不落明文密码</summary>
+        // 请求体里 password 字段的掩码正则：日志里绝不落明文密码
         private static readonly Regex PasswordPattern = new Regex(
             "\"password\"\\s*:\\s*\"[^\"]*\"", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
@@ -62,7 +62,7 @@ namespace SJZ_WCS.Middleware
         /// <param name="context">HTTP 上下文</param>
         public async Task InvokeAsync(HttpContext context)
         {
-            // 未启用或路径在 SkipPaths 里，直接跳过
+            /// 未启用或路径在 SkipPaths 里，直接跳过
             if (!_enabled || ShouldSkip(context.Request.Path))
             {
                 await _next(context);
@@ -94,7 +94,7 @@ namespace SJZ_WCS.Middleware
                 }
                 catch (Exception logEx)
                 {
-                    // 日志记录失败绝不影响业务请求
+                    /// 日志记录失败绝不影响业务请求
                     _logger.LogError(logEx, "接口日志记录失败：{Method} {Path}", context.Request.Method, context.Request.Path);
                 }
             }
@@ -209,7 +209,7 @@ namespace SJZ_WCS.Middleware
             string detail;
             if (caught == null)
             {
-                // 请求体里的密码做掩码处理，避免把明文密码写进日志表
+                /// 请求体里的密码做掩码处理，避免把明文密码写进日志表
                 detail = $"请求体：{MaskSensitive(body)}";
             }
             else

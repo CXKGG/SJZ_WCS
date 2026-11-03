@@ -28,19 +28,19 @@ namespace Service.PLC
         private readonly TimeSpan _timeout;
         private readonly CpuType _cpuType;
 
-        /// <summary>该设备的日志分类（按 DeviceType 区分 RGV / 输送线 PLC）</summary>
+        // 该设备的日志分类（按 DeviceType 区分 RGV / 输送线 PLC）
         private readonly LogCategory _logCategory;
 
-        /// <summary>连接失败日志的抑制间隔：后台重连服务每 5 秒重试一次，失败日志按此间隔去重，避免刷屏</summary>
+        // 连接失败日志的抑制间隔：后台重连服务每 5 秒重试一次，失败日志按此间隔去重，避免刷屏
         private static readonly TimeSpan ConnectFailureLogInterval = TimeSpan.FromSeconds(30);
 
-        /// <summary>最近一次写"连接失败"设备日志的时间（配合 <see cref="ConnectFailureLogInterval"/> 限流）</summary>
+        // 最近一次写"连接失败"设备日志的时间（配合  限流）
         private DateTime _lastConnectFailureLogAt = DateTime.MinValue;
 
-        /// <summary>真实 S7 连接对象，首次连接成功前为 null</summary>
+        // 真实 S7 连接对象，首次连接成功前为 null
         private Plc? _plc;
 
-        /// <summary>这台 PLC 的配置</summary>
+        // 这台 PLC 的配置
         public PlcConfig Config { get; }
 
         public string Name => Config.Name;
@@ -49,7 +49,7 @@ namespace Service.PLC
 
         public string LastError { get; private set; } = "";
 
-        /// <summary>最近一次连接成功的时间</summary>
+        // 最近一次连接成功的时间
         public DateTime? LastConnectTime { get; private set; }
 
         public S7PlcClient(PlcConfig config, ILoggerFactory loggerFactory, ILogService logService)
@@ -199,7 +199,7 @@ namespace Service.PLC
                     return FailRead(result, $"PLC[{Name}] 未连接", writeLog);
                 }
 
-                // S7.Net 的读写是同步阻塞的，丢到线程池执行；再用 WaitAsync 兜底限制总耗时
+                /// S7.Net 的读写是同步阻塞的，丢到线程池执行；再用 WaitAsync 兜底限制总耗时
                 try
                 {
                     TimeSpan totalTimeout = _timeout + TimeSpan.FromMilliseconds(1000);
@@ -309,7 +309,7 @@ namespace Service.PLC
             }
             catch
             {
-                // 连接本就失败，关闭异常忽略即可
+                /// 连接本就失败，关闭异常忽略即可
             }
 
             _plc = null;
@@ -380,8 +380,8 @@ namespace Service.PLC
             }
             else
             {
-                // 后台轮询每 500ms 一次，失败时只在控制台打 Debug，避免刷屏；
-                // 数据库日志由 PLC 业务服务按"失败状态变化"记一条（轮询时不逐次写）。
+                /// 后台轮询每 500ms 一次，失败时只在控制台打 Debug，避免刷屏；
+                /// 数据库日志由 PLC 业务服务按"失败状态变化"记一条（轮询时不逐次写）。
                 _logger.LogDebug("PLC[{Name}] 轮询读取失败：{Error}", Name, error);
             }
 

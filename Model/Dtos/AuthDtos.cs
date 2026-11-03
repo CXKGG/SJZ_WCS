@@ -3,23 +3,23 @@ namespace Model.Dtos
     /// <summary>登录请求体</summary>
     public class LoginRequest
     {
-        /// <summary>登录账号</summary>
+        // 登录账号
         public string usercode { get; set; } = "";
 
-        /// <summary>登录密码（明文，与库里 sysuser.password 比对）</summary>
+        // 登录密码（明文，与库里 sysuser.password 比对）
         public string password { get; set; } = "";
     }
 
     /// <summary>登录响应体</summary>
     public class LoginResponse
     {
-        /// <summary>是否登录成功</summary>
+        // 是否登录成功
         public bool success { get; set; }
 
-        /// <summary>结果说明</summary>
+        // 结果说明
         public string message { get; set; } = "";
 
-        /// <summary>登录成功时的用户信息；失败为 null</summary>
+        // 登录成功时的用户信息；失败为 null
         public LoginUser? data { get; set; }
     }
 
@@ -29,16 +29,16 @@ namespace Model.Dtos
     /// </summary>
     public class LoginUser
     {
-        /// <summary>用户主键（对应 X-User-Id 请求头）</summary>
+        // 用户主键（对应 X-User-Id 请求头）
         public long id { get; set; }
 
-        /// <summary>登录账号</summary>
+        // 登录账号
         public string usercode { get; set; } = "";
 
-        /// <summary>姓名（对应 X-User-Name 请求头）</summary>
+        // 姓名（对应 X-User-Name 请求头）
         public string username { get; set; } = "";
 
-        /// <summary>角色/岗位</summary>
+        // 角色/岗位
         public string role { get; set; } = "";
     }
 }
